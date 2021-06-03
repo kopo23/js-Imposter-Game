@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="Game.css">
+    <script>
+
+        let gameScore = 0; let name = ""; //점수 / 이름 / 이름(빈칸체크)
+        let onAnimate = false; //전역변수 애니메이션중인지
+        let weapon_onAnimate = false; //무기 애니메이션중인지
+        let isHit = false; //맞았는지
+
+        let stage_num = 1; let stage_max_num = 5; let stage_score = 1000;
+        let enemy_speed = 5000;
+
+        window.addEventListener("keydown", function (event) {
+
+            switch (event.code) {
+
+                case "Space":
+                case "ArrowUp":
+                    if (onAnimate == false) {
+                        CharacterMove($("#Among_red"), { bottom: "+=370px" }, { bottom: "-=370px" });
+                    }
+                    break;
+
+                case "ArrowDown":
+                case "KeyS":
+                    if (onAnimate == false) {
+                        CharacterMove($("#Among_red"), { height: "-=50px" }, { height: "+=50px" });
+                    }
+                    break;
+
+
+                case "KeyA":
+                case "ArrowLeft":
+                    if (onAnimate == false) {
+                        $("#Among_red").css("transform", "scaleX(1)");
+                        CharacterMove($("#Among_red"), {
+                            left: "-=100px",
+                        });
+
+                    }
+                    break;
+
+                case "KeyD":
+                case "ArrowRight":
+                    if (onAnimate == false) {
+                        $("#Among_red").css("transform", "scaleX(-1)");
+                        CharacterMove($("#Among_red"), {
+                            left: "+=100px"
+                        });
+                    }
+                    break;
+
+                case "KeyP":
+                    if (weapon_onAnimate == false) {
+                        character_Weapon($("#Among_red"));
+                    }
+            }
+        });
+
+        //캐릭터 이동
+        function CharacterMove(Character, P, AfterP) {
+
+            onAnimate = true;
+            Character.stop().animate(P, 500)
+                .animate(AfterP, 500, function () {
+                    onAnimate = false;
+                });
+
+        }
+
+        //적이동
+        function enemyMove() {
+            $("#enemy").css('display', 'block');
+            $("#enemy").animate({
+                right: "105%"
+            }, enemy_speed, 'linear', function () {
+                $("#enemy").css("right", "-100px");
+                gameScore += 100;  //게임스코어 증가
+            });
+
+        }
+
+        function character_Weapon(character) {
+            let PlayerRightX =
+                (parseInt($("#Among_red").css("left").replace("px", "")) + parseInt($("#Among_red").css('width').replace('px', '')));
+
+            let PlayerBottomY =
+                parseInt($("#Among_red").css("bottom").replace("px", ""));
+
+            let PlayerLeftX =
+                parseInt($("#Among_red").css("left").replace('px', ''));
+
+            let enemyLeftX = parseInt($("#enemy").css("left").replace("px", ""));
+
+            let enemyRightX = parseInt($("#enemy").css("left").replace("px", "")) + parseInt($("#enemy").css("width").replace("px", ""));
+
+            let enemyHeightY = parseInt($("#enemy").css("height").replace("px", ""));
+
+            let enemyBottomY = parseInt($("#enemy").css("bottom").replace("px", ""));
+
+            let weaponX = (PlayerRightX - 5);
+            let weaponY = (PlayerBottomY + 20);
+
+            weapon_onAnimate = true;
+            $("#weapon").css('display', 'block');
+            $("#weapon").css("left", weaponX + "px");
+            $("#weapon").css("bottom", weaponY + "px");
+            $("#weapon").animate({
+                left: "+=300px"
+            }, 2000, 'linear', function () {
+                $("#weapon").css('left', weaponX + "px");
+                $("#weapon").css('display', 'none');
+                weapon_onAnimate = false;
+
+            });
+
+        }
+
+        function weapon_hit() {
+            isHit = false;
+            let PlayerRightX =
+                (parseInt($("#Among_red").css("left").replace("px", "")) + parseInt($("#Among_red").css('width').replace('px', '')));
+            let PlayerBottomY =
+                parseInt($("#Among_red").css("bottom").replace("px", ""));
+            let PlayerLeftX =
+                parseInt($("#Among_red").css("left").replace('px', ''));
+
+            let enemyLeftX = parseInt($("#enemy").css("left").replace("px", ""));
+
+            let enemyRightX = (parseInt($("#enemy").css("left").replace("px", "")) + parseInt($("#enemy").css("width").replace("px", "")));
+
+            let enemyHeightY = (parseInt($("#enemy").css("bottom").replace("px", "")) + parseInt($("#enemy").css("height").replace("px", "")));
+
+            let enemyBottomY = parseInt($("#enemy").css("bottom").replace("px", ""));
+
+            let weaponRightX = (parseInt($("#weapon").css("left").replace("px", "")) + parseInt($("#weapon").css("width").replace("px", "")));
+            let weaponLeftX = parseInt($("#weapon").css("left").replace("px", ""));
+            let weaponHeightY = (parseInt($("#weapon").css("bottom").replace("px", "")) + parseInt($("#weapon").css("height").replace("px", "")));
+            let weaponBottomY = parseInt($("#weapon").css("bottom").replace("px", ""));
+
+            if (weaponRightX >= enemyLeftX && weaponLeftX <= enemyRightX) {
+                if (weaponBottomY <= enemyHeightY && weaponHeightY >= enemyBottomY) {
+                    isHit = true;
+                    gameScore += 100;
+                }
+            }
+
+            return isHit;
+        }
+
+        function enemy_dead() {
+            let enemyLeftX = parseInt($("#enemy").css("left").replace("px", ""));
+            let enemyRightX = (parseInt($("#enemy").css("left").replace("px", "")) + parseInt($("#enemy").css("width").replace("px", "")));
+            let enemyHeightY = (parseInt($("#enemy").css("bottom").replace("px", "")) + parseInt($("#enemy").css("height").replace("px", "")));
+            let enemyBottomY = parseInt($("#enemy").css("bottom").replace("px", ""));
+
+            $("#enemy_dead").css('display', 'block');
+            $("#enemy_dead").animate({
+                left: enemyLeftX + "px",
+                bottom: enemyBottomY + "px"
+            }, 0, 'linear');
+            $("#enemy").css('display', 'none');
+            $("#enemy_dead").fadeOut(1000);
+
+        }
+
+        //게임오버 여부
+        function gameOver() {
+
+            let isOver = false;
+            let Player = $("#Among_red");
+            let enemy = $("#enemy");
+            let PlayerRightX =
+                (parseInt($("#Among_red").css("left").replace("px", "")) + parseInt($("#Among_red").css('width').replace('px', '')));
+
+            let PlayerBottomY =
+                parseInt($("#Among_red").css("bottom").replace("px", ""));
+
+            let PlayerLeftX =
+                parseInt($("#Among_red").css("left").replace('px', ''));
+
+            let enemyLeftX = parseInt($("#enemy").css("left").replace("px", ""));
+
+            let enemyRightX =
+                (parseInt($("#enemy").css("left").replace("px", "")) + parseInt($("#enemy").css("width").replace("px", "")));
+
+            let enemyHeightY =
+                (parseInt($("#enemy").css("bottom").replace("px", "")) + parseInt($("#enemy").css("height").replace("px", "")));
+
+            let enemyBottomY = parseInt($("#enemy").css("bottom").replace("px", ""));
+
+            if ((PlayerRightX - 15 > enemyLeftX) && (PlayerBottomY < enemyHeightY)) {
+
+                if (PlayerLeftX < enemyRightX) {
+                    isOver = true;
+                }
+            }
+
+            return isOver;
+        }
+
+        //게임오버시
+        function gameIsOver() {
+            $("#Among_red").attr('src', 'Sets/character2.gif'); //죽을때 이미지
+            $("#Among_red").css('width', '3%');
+            $("#Among_red").stop(false, true);   //애니메이션 및 스택제거
+            $("#Among_red").animate({
+                bottom: "-=170px"
+            }, 2700, 'easeOutBounce');
+
+            setTimeout(CharaceterDead, 3000);
+
+        }
+
+        //게임오버 화면
+        function CharaceterDead() {
+            $("#cover").css("background", "url('Sets/Lose.png')");
+            $("#Among_red").fadeOut(3000);
+            $("#cover").fadeIn(5000, function () {
+                $(".maincontent").html("<div><h1>@<h1></div>" +
+                    "<div><h1>You are Dead!..</h1></div>" +
+                    "<button id = 'StartBtn' onclick = ''>Record Score</button>" +
+                    "</div><button id = 'StartBtn' onclick = 'window.location.reload()'>Home</button>");
+                $(".maincontent").fadeIn(3000, function () {
+                });
+            });
+        }
+
+        //클리어시 화면
+        function ClearAllStages() {
+            $("#cover").css("background", "url('Sets/cover1.jpg')");
+            $("#cover").fadeIn(5000, function () {
+                $(".maincontent").html("<div><h1>@<h1></div>" +
+                    "<div><h1>You WON!</h1></div>" +
+                    "</div><button id = 'StartBtn' onclick = 'window.location.reload()'>Home</button>")
+                $(".maincontent").fadeIn(3000, function () {
+                    //성적기록
+                });
+            });
+        }
+
+        //스테이지 변경
+        function Stage_set() {
+            if (stage_score <= gameScore) {
+                process_stop = true;
+                stage_num += 1;
+                stage_score += 1000;
+
+                if (stage_num > stage_max_num) {
+                    stage_num = 0;
+                }
+
+                switch (stage_num) {
+                    // 스테이지별 효과
+                    case 1:
+                        $("#Among_red").stop(false, true); $("#enemy").stop(false, true); $("#weapon").stop(false, true);
+                        $("#enemy").attr('src', 'Sets/enemy.gif');
+                        enemy_speed = enemy_speed;
+                        break;
+
+                    case 2:
+                        $("#enemy").attr('src', 'Sets/enemy2.gif');
+                        enemy_speed -= 1000;
+                        CountDown(2);
+                        Runaction2();
+                        break;
+
+                    case 3:
+                        $("#enemy").attr('src', 'Sets/enemy3.gif');
+                        enemy_speed -= 1000;
+                        CountDown(3);
+                        Runaction2();
+                        break;
+
+                    case 4:
+                        $("#enemy").attr('src', 'Sets/enemy4.gif');
+                        $("#enemy").css("transform", "scaleX(1)");
+                        enemy_speed -= 1000;
+                        CountDown(4);
+                        Runaction2();
+                        break;
+
+                    case 5:
+                        $("#enemy").attr('src', 'Sets/enemy5.gif');
+                        $("#enemy").css("transform", "scaleX(-1)");
+                        enemy_speed -= 1000;
+                        CountDown(5);
+                        Runaction2();
+                        break;
+
+                    case 0:
+                        $("#Among_red").stop(false, true); $("#enemy").stop(false, true); $("#weapon").stop(false, true);
+                        enemy_speed = 10000;
+                        $("Among_red").fadeOut(3000);
+                        ClearAllStages();
+                        break;
+                }
+            }
+        }
+
+        //메뉴얼화면
+        function ManualOn() {
+            $(".maincontent").html("<div><h1>@ Manual<h1></div>" +
+                "<div><img src ='Sets/kill2.gif'></div>" +
+                "<div>1.Use 'ASWD' keys or 'ArrowKeys' to Move and Press 'P' key to fire Weapon!</div>" +
+                "<br><div>2.U can either jump over (100points) or eliminate enemy with Weapon(200points) to Clear Stage!</div>" +
+                "</div><button id = 'StartBtn' onclick = 'window.location.reload()'>Go Back!</button>" +
+                "</div><button id = 'StartBtn' onclick = 'gameStart()'>Play!</button>")
+        }
+
+        // function NameCheck(name){
+        //     name = name.trim();
+        //     if (name.length == 0){
+        //         alert('ID must not be Empty!')
+        //         return false;
+        //     } else {
+        //         return name;
+        //     }
+
+        // }
+
+        //순위기록
+        // function RecordScore() {
+        //     name = prompt('Please Insert ID for Score','Insert ID (No Empty!)');
+        //     if (NameCheck(name) == false){
+        //         alert ('Your Score will not be Recorded!')
+        //     } else {
+        //         location.href = "ScoreRecord.jsp?name=" + name + "&score=" + (gameScore-100);
+        //     }
+
+        // }
+
+        //순위 보여주기만
+        // function ShowScore() {
+        //     location.href = "ScoreShow.jsp";
+        // }
+
+        //버튼누르면 시작
+        function gameStart() {
+            gameScore = 0;
+            $("#cover").fadeOut(1000, function () {
+                $("#cover2").hide();
+                $(".maincontent").hide();
+                onAnimate = true;   //처음에 못움직이게 -> runaction에서 풀어줌
+                CountDown(1);
+                Runaction();
+            });
+
+        }
+
+        //카운트다운
+        function CountDown(num) {
+            $("#counter").html('Stage - ' + num);
+            $(".content2").fadeIn(3000, function () {
+                $(".content2").fadeOut(500, function () {
+                    $("#counter").html("3");
+                    $(".content2").fadeIn(500, function () {
+                        $(".content2").fadeOut(500, function () {
+                            $("#counter").html("2");
+                            $(".content2").fadeIn(500, function () {
+                                $(".content2").fadeOut(500, function () {
+                                    $("#counter").html("1");
+                                    $(".content2").fadeIn(500, function () {
+                                        $(".content2").fadeOut(500, function () {
+                                            $("#counter").html("GO!")
+                                            $(".content2").fadeIn(function () {
+                                                $(".content2").fadeOut();
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        //Stage1
+        function Runaction() {
+            setTimeout(() => {
+                $("#Among_red").show();
+                $("#Among_red").css("transform", "scaleX(-1)");
+                $("#enemy").show();
+                setInterval(GameLoop, 1);
+                onAnimate = false; //처음에 못 움직이게 한거 풀음
+            }, 7000);
+        }
+
+        //Stage2부터 카운트다운 후 실행
+        function Runaction2() {
+            setTimeout(() => {
+                process_stop = false;
+                $("#enemy").css('display', 'block');
+            }, 7000);
+        }
+
+        //시작화면
+        $(function () {
+            $("#weapon").css('display', 'none');
+            $("#enemy_dead").css('display', 'none');
+            $("#Among_red").hide();
+            $("#enemy").hide();
+            $(".content2").hide();
+
+        });
+
+        //게임루프
+        let process_stop = false;
+        let GameLoop = function () {
+            if (process_stop == false) { // 제어변수
+                Stage_set();
+                enemyMove();
+
+                if (gameOver()) {
+                    onAnimate = true; weapon_onAnimate = true;  //죽으면 동작중이라고 걸어서 못움직이게
+                    $("#Among_red").stop(false, false);
+                    $("#enemy").stop(false, false);
+                    $("#weapon").stop(false, false);
+                    process_stop = true;
+                    gameIsOver();
+
+                } else {
+                    $("#Score").html('Score: ' + gameScore);
+                }
+
+                if (weapon_onAnimate == true && weapon_hit() == true) {
+                    console.log('hit!')
+                    enemy_dead();
+                    $("#weapon").stop(true, true);
+                    $("#enemy").stop(true, true);
+                }
+
+            } else {
+                $("#enemy").css('display', 'none'); // 제어변수 true 일시 모든화면정지(캐릭터빼고)
+                $("#enemy").stop(true, true);
+            }
+
+        }
+
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        <div class="maincontent">
+            <h1>@</h1>
+            <button id="StartBtn" onclick="gameStart()">Start!</button>
+            <button id="ManualBtn" onclick="ManualOn()">How To Play</button>
+            <button id='StartBtn' onclick=''>Score</button>
+            <!--원래는 onclick 시 ShowScore-->
+            <h3>Created by ChanHyeok(Kopo23)</h3>
+        </div>
+
+        <div class="content">
+            <h4 id="Score"></h4>
+        </div>
+
+        <div class="content2">
+            <h1 id="counter">STAGE 1</h1>
+        </div>
+
+        <div id="background" class="background"></div>
+        <!--<div id = "cover" class = "cover2"></div>-->
+        <div id="cover" class="cover"></div>
+        <img src="Sets/character1.gif" id="Among_red" alt="">
+        <img src="Sets/enemy.gif" id="enemy" alt="">
+        <img src="Sets/weapon.png" id="weapon" alt="">
+        <img src="Sets/kill.png" id="enemy_dead" alt="">
+    </div>
+</body>
+
+</html>
